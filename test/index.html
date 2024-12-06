@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <script type="module">
+    import { SharedWorker, Worker, proxied } from '../src/main.js';
+    const sw = new SharedWorker('./shared-worker.js');
+    const w = new Worker('./worker.js');
+    console.log(await sw.random());
+    console.log(await w.random());
+    console.log(proxied(sw));
+    console.log(proxied(w));
+  </script>
+</head>
+</html>

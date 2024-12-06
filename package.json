@@ -1,0 +1,23 @@
+{
+  "name": "accordant",
+  "version": "0.0.0",
+  "keywords": ["Worker", "SharedWorker", "async", "bindings"],
+  "type": "module",
+  "exports": {
+    "./main": "./src/main.js",
+    "./shared-worker": "./src/shared.js",
+    "./worker": "./src/worker.js",
+    "./package.json": "./package.json"
+  },
+  "author": "Andrea Giammarchi",
+  "license": "MIT",
+  "description": "One way shared/worker async bindings",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WebReflection/accordant.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WebReflection/accordant/issues"
+  },
+  "homepage": "https://github.com/WebReflection/accordant#readme"
+}
