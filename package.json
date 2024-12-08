@@ -1,7 +1,12 @@
 {
   "name": "accordant",
-  "version": "0.0.0",
-  "keywords": ["Worker", "SharedWorker", "async", "bindings"],
+  "version": "0.1.0",
+  "keywords": [
+    "Worker",
+    "SharedWorker",
+    "async",
+    "bindings"
+  ],
   "type": "module",
   "exports": {
     "./main": "./src/main.js",
