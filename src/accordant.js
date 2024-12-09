@@ -1,4 +1,5 @@
 import { isArray, stop } from './utils.js';
+import Transferable from './transferable.js';
 
 class EventHandler {
   #channel = '';
@@ -14,10 +15,17 @@ class EventHandler {
           stop(event);
           const [channel, id, name, args] = data;
           const response = [channel, id];
+          const send = [response];
           const proxy = await this.#promise;
           if (name in proxy) {
             try {
-              response.push(await proxy[name](...args));
+              const result = await proxy[name](...args);
+              if (result instanceof Transferable) {
+                response.push(result.data);
+                send.push(result.options);
+              }
+              else
+                response.push(result);
             }
             catch (error) {
               response.push(error);
@@ -26,7 +34,7 @@ class EventHandler {
           else {
             response.push(new Error(`Unknown method ${name}`));
           }
-          currentTarget.postMessage(response);
+          currentTarget.postMessage(...send);
         }
       }
       else if (typeof data.at(0) === 'string' && data.at(1) === 0) {

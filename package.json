@@ -11,6 +11,7 @@
   "exports": {
     "./main": "./src/main.js",
     "./shared-worker": "./src/shared.js",
+    "./transferable": "./src/transferable.js",
     "./worker": "./src/worker.js",
     "./package.json": "./package.json"
   },

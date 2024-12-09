@@ -1,5 +1,6 @@
 const { isArray } = Array;
-export { isArray };
+const { assign } = Object;
+export { assign, isArray };
 
 export const stop = event => {
   event.stopImmediatePropagation();
