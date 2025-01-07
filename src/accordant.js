@@ -1,4 +1,4 @@
-import { isArray, stop } from './utils.js';
+import { broadcast, isArray, stop } from './utils.js';
 import Transferable from './transferable.js';
 
 class EventHandler {
@@ -6,6 +6,9 @@ class EventHandler {
   #promise;
   constructor(promise) {
     this.#promise = promise;
+  }
+  get [broadcast]() {
+    return this.#channel;
   }
   async handleEvent(event) {
     const { currentTarget, data } = event;
@@ -46,7 +49,8 @@ class EventHandler {
   }
 }
 
-export default (port, promise) => port.addEventListener(
-  'message',
-  new EventHandler(promise),
-);
+export default (port, promise) => {
+  const eh = new EventHandler(promise);
+  port.addEventListener('message', eh);
+  return eh;
+};

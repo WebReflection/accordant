@@ -1,9 +1,11 @@
-import exports from '../src/worker.js';
+import { broadcast, exports } from '../src/worker.js';
 
 exports({
-  multiple: 'bindings',
+  multiple: () => 'bindings',
 });
 
 exports({
   random: () => ({ Worker: Math.random() }),
 });
+
+broadcast('worker:connected');
