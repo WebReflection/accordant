@@ -1,4 +1,5 @@
-import { isArray, stop, withResolvers } from './utils.js';
+import { broadcast, isArray, stop, withResolvers } from './utils.js';
+export { broadcast };
 
 const { SharedWorker: $SharedWorker, Worker: $Worker } = globalThis;
 
@@ -22,7 +23,7 @@ const asModule = options => ({
   ...options, type: 'module'
 });
 
-const bootstrap = port => {
+const bootstrap = (port, broadcast) => {
   let uid = 0;
   const { promise: init, resolve } = withResolvers();
   const channel = crypto.randomUUID();
@@ -32,10 +33,14 @@ const bootstrap = port => {
     const { data } = event;
     if (isArray(data) && data.at(0) === channel) {
       stop(event);
-      const [id, result] = [data.at(1), data.at(2)];
-      const resolveOrReject = ids.get(id);
-      delete ids.get(id);
-      resolveOrReject(result);
+      const [_, id, result, ...rest] = data;
+      if (rest.length && id === 0 && channel === result)
+        broadcast?.(...rest[0]);
+      else {
+        const resolveOrReject = ids.get(id);
+        delete ids.get(id);
+        resolveOrReject(result);
+      }
     }
   });
   port.postMessage([channel, 0, channel]);
@@ -51,9 +56,9 @@ export function SharedWorker(url, options) {
   if (options?.error)
     sw.addEventListener('error', options.error);
   port.start();
-  return bootstrap(port);
+  return bootstrap(port, options?.[broadcast]);
 }
 
 export function Worker(url, options) {
-  return bootstrap(new $Worker(url, asModule(options)));
+  return bootstrap(new $Worker(url, asModule(options)), options?.[broadcast]);
 }

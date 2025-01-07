@@ -4,13 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <script type="module">
-    import { SharedWorker, Worker, proxied } from '../src/main.js';
-    const sw = new SharedWorker('./shared-worker.js');
-    const w = new Worker('./worker.js');
+    import { SharedWorker, Worker, broadcast, proxied } from '../src/main.js';
+    const sw = new SharedWorker('./shared-worker.js', {
+      [broadcast](...args) {
+        console.log('SharedWorker', ...args);
+      }
+    });
+    const w = new Worker('./worker.js', {
+      [broadcast](...args) {
+        console.log('Worker', ...args);
+      }
+    });
     console.log(await sw.random());
-    console.log(await w.random());
-    console.log(proxied(sw));
-    console.log(proxied(w));
+    console.log(await w.random(), await w.multiple());
+    // proxied(sw).close();
+    // proxied(w).terminate();
   </script>
 </head>
 </html>

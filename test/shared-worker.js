@@ -1,5 +1,19 @@
-import exports from '../src/shared.js';
+import { broadcast, exports } from '../src/shared.js';
+
+const SharedWorker = Math.random();
+let ports = 0;
 
 exports({
-  random: () => ({ SharedWorker: Math.random() }),
+  random: () => ({ SharedWorker }),
+});
+
+
+addEventListener('port:connected', ({ type }) => {
+  ports++;
+  broadcast(type, ports);
+});
+
+addEventListener('port:disconnected', ({ type }) => {
+  ports--;
+  broadcast(type, ports);
 });
