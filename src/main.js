@@ -8,11 +8,16 @@ const references = new WeakMap;
 const proxyHandler = {
   get(port, name) {
     return async (...args) => {
-      const channel = await this.init, id = this.uid++;
-      const { promise, resolve, reject } = withResolvers();
-      this.ids.set(id, r => (r instanceof Error ? reject : resolve)(r));
-      port.postMessage([channel, id, name, args]);
-      return promise;
+      const channel = await this.init;
+      if (name === broadcast)
+        port.postMessage([channel, 0, channel, args]);
+      else {
+        const id = this.uid++;
+        const { promise, resolve, reject } = withResolvers();
+        this.ids.set(id, r => (r instanceof Error ? reject : resolve)(r));
+        port.postMessage([channel, id, name, args]);
+        return promise;
+      }
     };
   },
   has: () => false,

@@ -1,5 +1,6 @@
 import { broadcast, isArray, stop } from './utils.js';
 import Transferable from './transferable.js';
+import references from './references.js';
 
 class EventHandler {
   #channel = '';
@@ -17,6 +18,15 @@ class EventHandler {
         if (data.at(0) === this.#channel) {
           stop(event);
           const [channel, id, name, args] = data;
+          if (id === 0 && channel === name) {
+            for (const [wr, eh] of [...references]) {
+              while (!eh[broadcast]) await forIt();
+              const channel = eh[broadcast];
+              if (channel !== name)
+                wr.deref()?.postMessage([channel, 0, channel, args]);
+            }
+            return;
+          }
           const response = [channel, id];
           const send = [response];
           const proxy = await this.#promise;

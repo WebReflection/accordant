@@ -16,12 +16,16 @@
         console.log('Worker', ...args);
       }
     });
-    console.log(await w.random());
+    console.log(await w.random(), await w.multiple());
     await w.tag`Hello ${'World'}!`;
     console.log(proxied(sw));
     console.log(proxied(w));
     // proxied(sw).close();
     // proxied(w).terminate();
+    setTimeout(() => {
+      sw[broadcast]('hello others');
+      w[broadcast]('hello others');
+    }, 2000);
   </script>
 </head>
 </html>

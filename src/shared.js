@@ -1,10 +1,10 @@
 import { assign, broadcast , forIt, withResolvers } from './utils.js';
 import accordant from './accordant.js';
+import references from './references.js';
 
 const { promise, resolve } = withResolvers();
 
 const ffi = {};
-const references = new Map;
 const notify = connected => {
   const type = `port:${connected ? 'connected' : 'disconnected'}`;
   dispatchEvent(new Event(type));
