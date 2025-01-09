@@ -10,13 +10,16 @@
         console.log('SharedWorker', ...args);
       }
     });
+    console.log(await sw.random());
     const w = new Worker('./worker.js', {
       [broadcast](...args) {
         console.log('Worker', ...args);
       }
     });
-    console.log(await sw.random());
-    console.log(await w.random(), await w.multiple());
+    console.log(await w.random());
+    await w.tag`Hello ${'World'}!`;
+    console.log(proxied(sw));
+    console.log(proxied(w));
     // proxied(sw).close();
     // proxied(w).terminate();
   </script>
