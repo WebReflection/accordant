@@ -4,13 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <script type="module">
-    import { SharedWorker, Worker, broadcast, proxied } from '../src/main.js';
-    const sw = new SharedWorker('./shared-worker.js', {
-      [broadcast](...args) {
-        console.log('SharedWorker', ...args);
-      }
-    });
-    console.log(await sw.random());
+    import { Worker, broadcast, proxied } from '../dist/main.js';
     const w = new Worker('./worker.js', {
       [broadcast](...args) {
         console.log('Worker', ...args);
@@ -18,13 +12,23 @@
     });
     console.log(await w.random(), await w.multiple());
     await w.tag`Hello ${'World'}!`;
-    console.log(proxied(sw));
     console.log(proxied(w));
-    // proxied(sw).close();
-    // proxied(w).terminate();
+    setTimeout(() => {
+      w[broadcast]('hello others');
+    }, 2000);
+  </script>
+  <script type="module">
+    import { SharedWorker, broadcast, proxied } from '../dist/main.js';
+    const sw = new SharedWorker('./shared-worker.js', {
+      [broadcast](...args) {
+        console.log('SharedWorker', ...args);
+      }
+    });
+    console.log(await sw.random());
+    await sw.someSQLite();
+    console.log(proxied(sw));
     setTimeout(() => {
       sw[broadcast]('hello others');
-      w[broadcast]('hello others');
     }, 2000);
   </script>
 </head>

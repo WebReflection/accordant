@@ -1,4 +1,4 @@
-import { broadcast, exports } from '../../src/shared.js';
+import { broadcast, exports } from '../../dist/shared.js';
 
 const items = new Set;
 

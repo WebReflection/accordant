@@ -1,5 +1,5 @@
 import asTemplateStringsArray from 'https://esm.run/template-strings-array';
-import { broadcast, exports } from '../src/worker.js';
+import { broadcast, exports } from '../dist/worker.js';
 
 exports({
   multiple: () => 'bindings',

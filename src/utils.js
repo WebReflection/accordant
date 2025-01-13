@@ -1,14 +1,19 @@
 const { isArray } = Array;
 const { assign } = Object;
-export { assign, isArray };
+
+export { assign };
 
 export const broadcast = Symbol();
 
-export const stop = event => {
-  event.stopImmediatePropagation();
-  event.preventDefault();
+export const isChannel = event => {
+  if ('ports' in event) {
+    const { ports } = event;
+    if (isArray(ports) && ports.at(0) instanceof MessagePort) {
+      event.stopImmediatePropagation();
+      return true;
+    }
+  }
+  return false;
 };
-
-export const forIt = () => new Promise($ => setTimeout($, 0));
 
 export const withResolvers = () => Promise.withResolvers();
