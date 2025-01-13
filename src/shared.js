@@ -1,35 +1,40 @@
-import { assign, broadcast , forIt, withResolvers } from './utils.js';
-import accordant from './accordant.js';
-import references from './references.js';
+import '@webreflection/channel/shared';
 
-const { promise, resolve } = withResolvers();
+import { assign, isChannel, withResolvers } from './utils.js';
+import { references, send } from './references.js';
+import Handler from './handler.js';
 
-const ffi = {};
-const notify = connected => {
-  const type = `port:${connected ? 'connected' : 'disconnected'}`;
-  dispatchEvent(new Event(type));
-}
 const fr = new FinalizationRegistry(wr => {
   references.delete(wr);
   notify(false);
 });
 
-const $broadcast = async (...args) => {
-  for (const [wr, eh] of [...references]) {
-    while (!eh[broadcast]) await forIt();
-    wr.deref()?.postMessage([eh[broadcast], 0, eh[broadcast], args]);
-  }
-};
+const ffi = {};
+const { promise, resolve } = withResolvers();
+
+const notify = connected => {
+  const type = `port:${connected ? 'connected' : 'disconnected'}`;
+  dispatchEvent(new Event(type));
+}
 
 addEventListener('connect', ({ ports }) => {
   for (const port of ports) {
-    const wr = new WeakRef(port);
-    fr.register(port, wr);
-    references.set(wr, accordant(port, promise));
-    port.start();
-    promise.then(() => notify(true));
+    port.addEventListener('channel', event => {
+      if (isChannel(event)) {
+        const [port] = event.ports;
+        const wr = new WeakRef(port);
+        port.addEventListener('message', new Handler(ffi));
+        fr.register(port, wr);
+        references.add(wr);
+        notify(true);
+        resolve();
+      }
+    });
   }
 });
 
-const exports = bindings => resolve(assign(ffi, bindings));
-export { $broadcast as broadcast, exports };
+export const broadcast = (...args) => {
+  promise.then(() => send('', args));
+};
+
+export const exports = bindings => assign(ffi, bindings);

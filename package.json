@@ -8,6 +8,15 @@
     "bindings"
   ],
   "type": "module",
+  "scripts": {
+    "build": "rollup --config rollup.config.js"
+  },
+  "files": [
+    "dist/*",
+    "src/*",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     "./main": "./src/main.js",
     "./shared-worker": "./src/shared.js",
@@ -25,5 +34,13 @@
   "bugs": {
     "url": "https://github.com/WebReflection/accordant/issues"
   },
-  "homepage": "https://github.com/WebReflection/accordant#readme"
+  "homepage": "https://github.com/WebReflection/accordant#readme",
+  "dependencies": {
+    "@webreflection/channel": "^0.1.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.30.1"
+  }
 }

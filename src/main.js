@@ -1,21 +1,20 @@
-import { broadcast, isArray, stop, withResolvers } from './utils.js';
-export { broadcast };
+import * as channel from '@webreflection/channel/main';
 
-const { SharedWorker: $SharedWorker, Worker: $Worker } = globalThis;
+import { broadcast, withResolvers } from './utils.js';
+export { broadcast };
 
 const references = new WeakMap;
 
 const proxyHandler = {
-  get(port, name) {
+  get(channel, name) {
     return async (...args) => {
-      const channel = await this.init;
       if (name === broadcast)
-        port.postMessage([channel, 0, channel, args]);
+        channel.postMessage([true, this.uuid, args]);
       else {
-        const id = this.uid++;
+        const id = this.id++;
         const { promise, resolve, reject } = withResolvers();
         this.ids.set(id, r => (r instanceof Error ? reject : resolve)(r));
-        port.postMessage([channel, id, name, args]);
+        channel.postMessage([id, name, args]);
         return promise;
       }
     };
@@ -24,46 +23,37 @@ const proxyHandler = {
   ownKeys: () => [],
 };
 
-const asModule = options => ({
-  ...options, type: 'module'
-});
-
-const bootstrap = (port, broadcast) => {
-  let uid = 0;
-  const { promise: init, resolve } = withResolvers();
-  const channel = crypto.randomUUID();
-  const ids = new Map([[uid++, resolve]]);
-  const proxy = new Proxy(port, { ...proxyHandler, ids, init, uid });
-  port.addEventListener('message', event => {
-    const { data } = event;
-    if (isArray(data) && data.at(0) === channel) {
-      stop(event);
-      const [_, id, result, ...rest] = data;
-      if (rest.length && id === 0 && channel === result)
-        broadcast?.(...rest[0]);
-      else {
-        const resolveOrReject = ids.get(id);
-        delete ids.get(id);
-        resolveOrReject(result);
-      }
+const createProxy = (port, broadcast) => {
+  const ids = new Map;
+  const uuid = crypto.randomUUID();
+  const channel = port.createChannel();
+  channel.addEventListener('message', ({ data }) => {
+    const [id, result] = data;
+    if (typeof id === 'number') {
+      ids.get(id)(result);
+      delete ids.get(id);
+    }
+    else if (result !== uuid) {
+      broadcast?.(...data.at(2));
     }
   });
-  port.postMessage([channel, 0, channel]);
-  references.set(proxy, port);
+  return new Proxy(channel, { ...proxyHandler, uuid, ids, id: 0 });
+};
+
+const create = (Class, url, options) => {
+  const w = new Class(url, options);
+  const port = Class === channel.Worker ? w : w.port;
+  const proxy = createProxy(port, options?.[broadcast]);
+  references.set(proxy, w);
   return proxy;
 };
 
 export const proxied = proxy => references.get(proxy);
 
 export function SharedWorker(url, options) {
-  const sw = new $SharedWorker(url, asModule(options));
-  const { port } = sw;
-  if (options?.error)
-    sw.addEventListener('error', options.error);
-  port.start();
-  return bootstrap(port, options?.[broadcast]);
+  return create(channel.SharedWorker, url, options);
 }
 
 export function Worker(url, options) {
-  return bootstrap(new $Worker(url, asModule(options)), options?.[broadcast]);
+  return create(channel.Worker, url, options);
 }
