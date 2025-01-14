@@ -1,8 +1,8 @@
 import * as channel from '@webreflection/channel/main';
 
-import { broadcast, withResolvers } from './utils.js';
-export { broadcast };
+import { withResolvers } from './utils.js';
 
+export const broadcast = Symbol();
 const references = new WeakMap;
 
 const proxyHandler = {
@@ -26,7 +26,7 @@ const proxyHandler = {
 const createProxy = (port, broadcast) => {
   const ids = new Map;
   const uuid = crypto.randomUUID();
-  const channel = port.createChannel();
+  const channel = port.createChannel('accordant');
   channel.addEventListener('message', ({ data }) => {
     const [id, result] = data;
     if (typeof id === 'number') {

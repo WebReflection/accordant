@@ -1,21 +1,21 @@
 import '@webreflection/channel/worker';
 
-import { assign, isChannel, withResolvers } from './utils.js';
+import { isChannel, withResolvers } from './utils.js';
+import { exports, ffi } from './ffi.js';
 import Handler from './handler.js';
 
-const ffi = {};
 const { promise, resolve } = withResolvers();
 
-addEventListener('channel', event => {
-  if (isChannel(event)) {
+addEventListener('channel', function channel(event) {
+  if (isChannel(event, channel)) {
     const [port] = event.ports;
     port.addEventListener('message', new Handler(ffi));
     resolve(port);
   }
 });
 
-export const broadcast = (...args) => {
+const broadcast = (...args) => {
   promise.then(port => port.postMessage([true, '', args]));
 };
 
-export const exports = bindings => assign(ffi, bindings);
+export { broadcast, exports };

@@ -1,7 +1,8 @@
 import '@webreflection/channel/shared';
 
-import { assign, isChannel, withResolvers } from './utils.js';
+import { isChannel, withResolvers } from './utils.js';
 import { references, send } from './references.js';
+import { exports, ffi } from './ffi.js';
 import Handler from './handler.js';
 
 const fr = new FinalizationRegistry(wr => {
@@ -9,7 +10,6 @@ const fr = new FinalizationRegistry(wr => {
   notify(false);
 });
 
-const ffi = {};
 const { promise, resolve } = withResolvers();
 
 const notify = connected => {
@@ -19,8 +19,8 @@ const notify = connected => {
 
 addEventListener('connect', ({ ports }) => {
   for (const port of ports) {
-    port.addEventListener('channel', event => {
-      if (isChannel(event)) {
+    port.addEventListener('channel', function channel(event) {
+      if (isChannel(event, channel)) {
         const [port] = event.ports;
         const wr = new WeakRef(port);
         port.addEventListener('message', new Handler(ffi));
@@ -33,8 +33,8 @@ addEventListener('connect', ({ ports }) => {
   }
 });
 
-export const broadcast = (...args) => {
+const broadcast = (...args) => {
   promise.then(() => send('', args));
 };
 
-export const exports = bindings => assign(ffi, bindings);
+export { broadcast, exports };
