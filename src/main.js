@@ -31,7 +31,7 @@ const createProxy = (port, broadcast) => {
     const [id, result] = data;
     if (typeof id === 'number') {
       ids.get(id)(result);
-      delete ids.get(id);
+      ids.delete(id);
     }
     else if (result !== uuid) {
       broadcast?.(...data.at(2));
